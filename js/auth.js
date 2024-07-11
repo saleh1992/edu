@@ -1,3 +1,5 @@
+import {CONFIG} from '../utils/config.js';
+
 let register_form = document.getElementById('register');
 
 let register_form_input = register_form.querySelectorAll('input');
@@ -51,8 +53,7 @@ register_form.addEventListener('submit', async (e) => {
     }
 });
 async function postData({ email, username, password, conpassword }) {
-    // const url = 'http://192.168.1.14:8000/api/register';
-    const api_header = /* process?.env?.API_URL ||  */'http://192.168.1.15:8000';
+    const api_header = CONFIG.API_URL;
     const url = `${api_header}/api/register`;
     console.log('🚀 ~ postData ~ url:', url);
     const data = {
@@ -83,8 +84,8 @@ async function postData({ email, username, password, conpassword }) {
         // if (!response.ok) {
         //   throw new Error(`Response status: ${response}`);
         // }
-
         const json = await response.json();
+        showModal(json);
         console.log(json);
     } catch (error) {
         const error_message = await error;
@@ -103,7 +104,7 @@ function showModal(res) {
       <div class="modal-dialog" role="document">
           <div class="modal-content">
               <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel">Error</h5>
+                  <h5 class="modal-title" id="exampleModalLabel">${res.status ? 'Success' : 'Error'}</h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
@@ -208,6 +209,8 @@ login_form.addEventListener('submit', async (e) => {
     console.log('🚀 ~ login_form.addEventListener ~ res:', res);
     if (res.status == 'false') {
         console.log('🚀 ~ login_form.addEventListener ~ res:', res.message);
+        console.log('🚀 ~ login_ false:', res.message);
+        
         login_every_label.forEach((label) => {
             // make color  to var -bs-danger
             label.style.color = 'var(--bs-danger)';
@@ -216,12 +219,11 @@ login_form.addEventListener('submit', async (e) => {
             // make color  to var -bs-danger
             span.style.backgroundColor = 'var(--bs-danger)';
         });
-        showModal(res);
     }
 });
 
 async function login({ username_or_email, password }) {
-    const api_header = /* process?.env?.API_URL ||  */ 'http://192.168.1.15:8000';
+    const api_header = CONFIG.API_URL 
     const url = `${api_header}/api/login`;
     console.log('🚀 ~ postData ~ url:', url);
     let data = {
@@ -238,17 +240,21 @@ async function login({ username_or_email, password }) {
             body: JSON.stringify(data),
         });
         console.log('🚀 ~ login ~ response:', response)
+       
         if (response.status === 422) {
             let errorJson = await response.json();
             return errorJson;
         } else if (!response.ok) {
+            let json = await response.json();
+            showModal(json);
             throw new Error(`Response status: ${response.status}`);
         }
+
         let json = await response.json();
+        showModal(json);
         console.log('🚀 ~ login ~ json:', json)
     } catch (error) {
         let error_message = await error;
-        console.log('🚀 ~ login ~ error:', error_message.json());
         console.log('🚀 ~ login ~ error:', error);
         console.error(error.message);
     }
